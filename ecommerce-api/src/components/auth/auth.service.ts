@@ -7,15 +7,25 @@ import {
 } from 'amazon-cognito-identity-js';
 import { AuthLoginUserDto } from './dto/auth-login-user-dto';
 import { AuthRegisterUserDto } from './dto/auth-register-user-dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AwsCognitoService {
   private userPool: CognitoUserPool;
 
-  constructor() {
+  constructor(private readonly configService: ConfigService) {
+    const userPoolId = this.configService.get<string>(
+      'cognitoConfig.userPoolId',
+    );
+    const clientId = this.configService.get<string>('cognitoConfig.clientId');
+
+    if (!userPoolId || !clientId) {
+      throw new Error(`cognito config missing values`);
+    }
+
     this.userPool = new CognitoUserPool({
-      UserPoolId: 'ap-south-1_QzqNKt9RE',
-      ClientId: '635dsqquma3o85b0rc0cp23ifr',
+      UserPoolId: userPoolId,
+      ClientId: clientId,
     });
   }
 
